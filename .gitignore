@@ -1,0 +1,97 @@
+#################################
+# Python
+#################################
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+.env.*
+!.env.example
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+#################################
+# AI / ML / Data
+#################################
+# Model artifacts
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.onnx
+
+# Large datasets
+data/
+datasets/
+*.csv
+*.parquet
+*.feather
+
+#################################
+# Google Earth Engine
+#################################
+# GEE auth & cache
+.credentials/
+gee_credentials.json
+
+#################################
+# Docker
+#################################
+*.log
+docker-compose.override.yml
+
+#################################
+# Node / Frontend
+#################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend build output
+dist/
+build/
+
+#################################
+# OS / Editor
+#################################
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+
+#################################
+# Git
+#################################
+.gitconfig
+.gitattributes
+
+#################################
+# Secrets & Local Config
+#################################
+*.key
+*.pem
+*.crt
+*.secret
+secrets/
+config/local.yaml
+
+#################################
+# Cache & Temp
+#################################
+.cache/
+tmp/
+temp/
