@@ -1,4 +1,7 @@
 fastapi
 uvicorn
-requests
 python-dotenv
+requests
+earthengine-api
+numpy
+pandas
