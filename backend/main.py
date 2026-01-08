@@ -1,11 +1,12 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import requests
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timezone
-from gee import (
+from features import (
     init_gee,
     get_jrc_perm_water,
     get_precip_1d_3d,
@@ -22,6 +23,17 @@ init_gee()
 
 app = FastAPI(title="Floodsense Backend")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 AI_SERVICE_URL = os.getenv("AI_SERVICE_URL")
     
 class PredictLatLonRequest(BaseModel):
@@ -34,12 +46,10 @@ def health():
 
 @app.post("/predict")
 def predict(req: PredictLatLonRequest):
-    current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     features = build_features(
         lat=req.lat,
-        lon=req.lon,
-        date=current_date
+        lon=req.lon
     )
 
     features_array = features["features"]

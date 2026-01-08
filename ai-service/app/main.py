@@ -74,10 +74,22 @@ def predict(data: PredictionInput):
             "expected_order": feature_columns
         }
 
-    input_array = np.array(data.features)
+    input_array = np.array(data.features, dtype=float)
+
+    # --- TWI guard ---
+    TWI_INDEX = feature_columns.index("TWI")
+    twi_value = input_array[TWI_INDEX]
+
+    if not np.isfinite(twi_value):
+        return {
+            "prediction": -1,
+            "risk_score": 0
+        }
+
+    # --- Other invalid values ---
     if not np.isfinite(input_array).all():
         return {
-            "error": "Input contains NaN or infinite values"
+            "error": "Input contains NaN or infinite values (non-TWI)"
         }
 
     input_df = pd.DataFrame(
