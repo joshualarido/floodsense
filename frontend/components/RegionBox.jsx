@@ -1,5 +1,6 @@
 import { TbMapPinFilled } from "react-icons/tb";
 import FloodRiskIcon from "./FloodRiskIcon";
+import { useReverseGeocode } from "../src/hooks/useReverseGeocode";
 
 /* ---------- helpers ---------- */
 const getRiskLevel = (riskValue) => {
@@ -82,6 +83,7 @@ export default function RegionBox({
   loading,
 }) {
   const rawRiskScore = result?.ai_response?.risk_score;
+  const { locationName, loading: locationLoading } = useReverseGeocode(point);
 
   const riskValue =
     typeof rawRiskScore === "number"
@@ -100,8 +102,7 @@ export default function RegionBox({
   return (
     <div className="
       flex flex-col gap-4
-      bg-white/95 rounded-xl p-4 shadow-lg
-      bg-gradient-to-b from-white to-gray-200
+      bg-white rounded-xl p-4 shadow-lg
       w-[300px]
     ">
       {/* Header */}
@@ -122,15 +123,26 @@ export default function RegionBox({
 
       {point && (
         <div className="flex flex-col gap-3 text-sm font-primary">
-          <div className="flex flex-row gap-4">
-            <div>
-              <span className="text-gray-500">Latitude</span>
-              <div className="font-medium">{point.lat.toFixed(5)}</div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-row gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-gray-500">Latitude</span>
+                <div className="font-medium">{point.lat.toFixed(5)}</div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-gray-500">Longitude</span>
+                <div className="font-medium">{point.lng.toFixed(5)}</div>
+              </div>
             </div>
 
-            <div>
-              <span className="text-gray-500">Longitude</span>
-              <div className="font-medium">{point.lng.toFixed(5)}</div>
+            <div className="w-full flex flex-col gap-2">
+              <span className="text-xs font-semibold text-gray-500">Location Name</span>
+              <div className="text-xs font-medium text-gray-800">
+                {locationLoading
+                  ? "Resolving location…"
+                  : locationName || "Unknown location"}
+              </div>
             </div>
           </div>
 
