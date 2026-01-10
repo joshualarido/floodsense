@@ -8,9 +8,7 @@ load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 
-# =========================
 # GEE INIT
-# =========================
 def init_gee():
     try:
         ee.Initialize(project=PROJECT_ID)
@@ -18,14 +16,10 @@ def init_gee():
         ee.Authenticate()
         ee.Initialize(project=PROJECT_ID)
 
-# =========================
 # STATIC CONFIG
-# =========================
-STATIC_NDVI_DATE = "2023-08-15"  # Indonesia-safe Sentinel-2 date
+STATIC_NDVI_DATE = "2023-08-15"  # for mvp purposes, we are using fixed date for NDVI because real-time data is often paid. this is a date that should have safe & clear ndvi values for the whole of jakarta
 
-# =========================
 # JRC PERMANENT WATER
-# =========================
 def get_jrc_perm_water(lat: float, lon: float) -> dict:
     point = ee.Geometry.Point([lon, lat])
 
@@ -43,13 +37,8 @@ def get_jrc_perm_water(lat: float, lon: float) -> dict:
 
     return {"jrc_perm_water": perm_water.getInfo()}
 
-# =========================
 # OPEN-METEO PRECIP
-# =========================
 def get_precip_1d_3d(lat: float, lon: float) -> dict:
-    """
-    Uses Open-Meteo daily precipitation_sum (mm).
-    """
     end_date = datetime.utcnow().date()
     start_date = end_date - timedelta(days=3)
 
@@ -69,7 +58,6 @@ def get_precip_1d_3d(lat: float, lon: float) -> dict:
     daily = data.get("daily", {})
     precip = daily.get("precipitation_sum", [])
 
-    # Defensive defaults
     precip = precip if precip else [0, 0, 0]
 
     precip_1d = precip[-1]
@@ -80,9 +68,7 @@ def get_precip_1d_3d(lat: float, lon: float) -> dict:
         "precip_3d": precip_3d,
     }
 
-# =========================
 # SENTINEL-2 NDVI / NDWI (STATIC)
-# =========================
 def _mask_s2_clouds(image):
     qa = image.select("QA60")
     cloud_bit = 1 << 10
@@ -96,9 +82,6 @@ def _mask_s2_clouds(image):
     return image.updateMask(mask).divide(10000)
 
 def get_ndvi_ndwi(lat: float, lon: float) -> dict:
-    """
-    NDVI / NDWI using a STATIC SAFE DATE (not real-time).
-    """
     point = ee.Geometry.Point([lon, lat])
 
     center = ee.Date(STATIC_NDVI_DATE)
@@ -150,9 +133,7 @@ def get_ndvi_ndwi(lat: float, lon: float) -> dict:
         "NDWI": result.get("NDWI").getInfo(),
     }
 
-# =========================
 # LANDCOVER
-# =========================
 def get_landcover(lat: float, lon: float) -> dict:
     point = ee.Geometry.Point([lon, lat])
 
@@ -168,9 +149,7 @@ def get_landcover(lat: float, lon: float) -> dict:
     landcover = ee.Number(ee.Algorithms.If(value, value, 0))
     return {"landcover": landcover.getInfo()}
 
-# =========================
 # DEM FEATURES
-# =========================
 def get_dem_features(lat: float, lon: float) -> dict:
     point = ee.Geometry.Point([lon, lat])
 
@@ -198,19 +177,15 @@ def get_dem_features(lat: float, lon: float) -> dict:
         "aspect": aspect.getInfo(),
     }
 
-# =========================
 # UPSTREAM AREA & TWI
-# =========================
 def get_upstream_twi(lat: float, lon: float) -> dict:
     point = ee.Geometry.Point([lon, lat])
 
     acc = ee.Image("WWF/HydroSHEDS/15ACC").select("b1")
     dem = ee.Image("USGS/SRTMGL1_003")
 
-    # Pixel area aligned with HydroSHEDS
     cell_area = ee.Image.pixelArea().reproject(acc.projection())
 
-    # Upstream area (m²)
     upstream_m2 = acc.multiply(cell_area).reduceRegion(
         reducer=ee.Reducer.first(),
         geometry=point,
@@ -222,7 +197,6 @@ def get_upstream_twi(lat: float, lon: float) -> dict:
         ee.Algorithms.If(upstream_m2, upstream_m2, 0)
     ).divide(1_000_000)
 
-    # ---- SLOPE AS NUMBER (THIS IS THE KEY FIX) ----
     slope_deg = ee.Terrain.slope(dem).reduceRegion(
         reducer=ee.Reducer.first(),
         geometry=point,
@@ -234,10 +208,8 @@ def get_upstream_twi(lat: float, lon: float) -> dict:
         ee.Algorithms.If(slope_deg, slope_deg, 0.001)
     ).multiply(3.141592653589793 / 180)
 
-    # Avoid tan(0)
     slope_rad = slope_rad.max(0.001)
 
-    # TWI = ln(A / tan(beta))
     twi = upstream_km2.divide(slope_rad.tan()).log()
 
     return {
@@ -245,9 +217,7 @@ def get_upstream_twi(lat: float, lon: float) -> dict:
         "TWI": twi.getInfo(),
     }
 
-# =========================
-# BUILD FEATURES
-# =========================
+# BUILD FEATURES TABLE
 def build_features(lat: float, lon: float) -> dict:
     f = {}
 

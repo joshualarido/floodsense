@@ -21,7 +21,6 @@ export function useReverseGeocode(point) {
           {
             headers: {
               "Accept": "application/json",
-              // good practice for Nominatim
               "User-Agent": "FloodSense/1.0",
             },
           }

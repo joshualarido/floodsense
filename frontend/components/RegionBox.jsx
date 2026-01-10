@@ -2,7 +2,6 @@ import { TbMapPinFilled } from "react-icons/tb";
 import FloodRiskIcon from "./FloodRiskIcon";
 import { useReverseGeocode } from "../src/hooks/useReverseGeocode";
 
-/* ---------- helpers ---------- */
 const getRiskLevel = (riskValue) => {
   if (riskValue <= 30) return "low";
   if (riskValue <= 60) return "medium";
@@ -75,7 +74,6 @@ const FEATURE_LABELS = [
   },
 ];
 
-/* ---------- component ---------- */
 export default function RegionBox({
   point,
   result,
@@ -101,11 +99,7 @@ export default function RegionBox({
 
   return (
     <div className="
-      flex flex-col gap-4
-      bg-white rounded-xl p-4 shadow-lg
-      w-[300px]
-    ">
-      {/* Header */}
+      flex flex-col gap-4 bg-white rounded-xl p-4 shadow-lg w-[300px]">
       <h1 className="flex flex-row gap-2 items-center text-md font-primary font-semibold text-primary-500">
         <span className="text-2xl text-primary-500">
           <TbMapPinFilled />
@@ -163,7 +157,6 @@ export default function RegionBox({
 
           {result && (
             <>
-              {/* Risk summary */}
               <div className="flex items-center gap-3 mt-2">
                 <FloodRiskIcon risk={riskLevel} />
                 <div>
@@ -174,7 +167,6 @@ export default function RegionBox({
                 </div>
               </div>
 
-              {/* Conditions */}
               <div className="mt-3">
                 <div className="text-xs font-semibold text-gray-500 mb-2">
                   Conditions

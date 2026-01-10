@@ -35,6 +35,7 @@ if MODEL_URL is None:
 
 Path("app/model").mkdir(parents=True, exist_ok=True)
 
+# initial model download to huggingface via hf aswell
 if not Path(MODEL_LOCAL_PATH).exists():
     print("Downloading model from Hugging Face...")
     response = requests.get(MODEL_URL, stream=True)
@@ -68,6 +69,7 @@ def health_check():
 @app.post("/predict")
 def predict(data: PredictionInput):
 
+    # column validation
     if len(data.features) != len(feature_columns):
         return {
             "error": f"Expected {len(feature_columns)} features, got {len(data.features)}",
@@ -76,7 +78,7 @@ def predict(data: PredictionInput):
 
     input_array = np.array(data.features, dtype=float)
 
-    # --- TWI guard ---
+    # twi index validation (THIS VALUE CAN BE INFINITE IF POINT IS ABOVE OCEAN/LARGE BODY OF PERMANENT WATER)
     TWI_INDEX = feature_columns.index("TWI")
     twi_value = input_array[TWI_INDEX]
 
@@ -86,7 +88,6 @@ def predict(data: PredictionInput):
             "risk_score": 0
         }
 
-    # --- Other invalid values ---
     if not np.isfinite(input_array).all():
         return {
             "error": "Input contains NaN or infinite values (non-TWI)"
