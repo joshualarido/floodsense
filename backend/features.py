@@ -3,6 +3,7 @@ import os
 import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from precomp_features import PRECOMPUTED_FEATURES
 
 load_dotenv()
 
@@ -12,9 +13,11 @@ PROJECT_ID = os.getenv("PROJECT_ID")
 def init_gee():
     try:
         ee.Initialize(project=PROJECT_ID)
+        print("gee live 👍")
     except Exception:
         ee.Authenticate()
         ee.Initialize(project=PROJECT_ID)
+        print("gee live 👍")
 
 # STATIC CONFIG
 STATIC_NDVI_DATE = "2023-08-15"  # for mvp purposes, we are using fixed date for NDVI because real-time data is often paid. this is a date that should have safe & clear ndvi values for the whole of jakarta
@@ -217,16 +220,17 @@ def get_upstream_twi(lat: float, lon: float) -> dict:
         "TWI": twi.getInfo(),
     }
 
-# BUILD FEATURES TABLE
-def build_features(lat: float, lon: float) -> dict:
-    f = {}
-
-    f.update(get_jrc_perm_water(lat, lon))
-    f.update(get_precip_1d_3d(lat, lon))
-    f.update(get_ndvi_ndwi(lat, lon))
-    f.update(get_landcover(lat, lon))
-    f.update(get_dem_features(lat, lon))
-    f.update(get_upstream_twi(lat, lon))
+def build_features(lat, lon):
+    if os.getenv("APP_MODE") == "offline":
+        f = PRECOMPUTED_FEATURES
+    else:
+        f = {}
+        f.update(get_jrc_perm_water(lat, lon))
+        f.update(get_precip_1d_3d(lat, lon))
+        f.update(get_ndvi_ndwi(lat, lon))
+        f.update(get_landcover(lat, lon))
+        f.update(get_dem_features(lat, lon))
+        f.update(get_upstream_twi(lat, lon))
 
     return {
         "features": [

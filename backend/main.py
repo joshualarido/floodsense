@@ -19,7 +19,8 @@ from features import (
 
 
 load_dotenv()
-init_gee()
+if os.getenv("APP_MODE") == "live":
+    init_gee()
 
 app = FastAPI(title="Floodsense Backend")
 
