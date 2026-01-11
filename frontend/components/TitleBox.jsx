@@ -1,3 +1,4 @@
+import { APP_MODE } from "../src/config";
 import { 
     FaHouseFloodWater 
 } from "react-icons/fa6";
@@ -9,6 +10,11 @@ export default function TitleBox() {
                     bg-white">
       <span className="wave text-2xl text-primary-500"><FaHouseFloodWater /></span>
       <span className="font-primary text-xl text-primary-500 font-semibold">FloodSense Jakarta</span>
+      {APP_MODE === "offline" && (
+        <span className="text-xs text-orange-500">
+          Demo Mode (Offline)
+        </span>
+      )}
     </div>
   );
 }
